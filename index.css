@@ -1,0 +1,92 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary:    #FFFFFF;
+  --bg-secondary:  #F8F5FC;
+  --bg-tertiary:   #F2EDF8;
+  --text-primary:  #1A0A2E;
+  --text-secondary:#5C4A72;
+  --text-tertiary: #9B8BAB;
+  --border-light:  rgba(91,44,145,0.12);
+  --border-medium: rgba(91,44,145,0.22);
+  --violet:        #5B2C91;
+  --violet-light:  #F0E8FB;
+  --rose:          #E91E8C;
+  --rose-light:    #FDE8F4;
+  --green:         #1D9E75;
+  --green-light:   #D1FAE5;
+  --red:           #DC2626;
+  --red-light:     #FEE2E2;
+  --orange:        #D97706;
+  --orange-light:  #FEF3C7;
+  --radius-sm:     6px;
+  --radius-md:     8px;
+  --radius-lg:     12px;
+  --radius-xl:     16px;
+  --shadow-sm:     0 1px 3px rgba(91,44,145,0.08);
+  --shadow-md:     0 4px 12px rgba(91,44,145,0.12);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .heading {
+  font-family: 'Poppins', sans-serif;
+}
+
+input, select, textarea, button {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--violet);
+  box-shadow: 0 0 0 3px rgba(91,44,145,0.1);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+button {
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+button:active { transform: scale(0.98); }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in { animation: fadeIn 0.3s ease; }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .card { box-shadow: none; border: 1px solid #ddd; }
+}
