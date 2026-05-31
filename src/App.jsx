@@ -49,6 +49,19 @@ const injectStyles = () => {
   document.head.appendChild(s);
 };
 
+// ── SYNC SUPABASE ─────────────────────────────────────────────────────────────
+const syncToSupabase = async (table, data, agent) => {
+  try {
+    await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table, action: 'insert', data, agent }),
+    });
+  } catch (e) {
+    console.warn('Sync Supabase échouée:', e.message);
+  }
+};
+
 const Logo = ({ height=34 }) => (
   <svg viewBox="0 0 210 60" height={height} style={{display:"block",flexShrink:0}} xmlns="http://www.w3.org/2000/svg">
     <circle cx="30" cy="30" r="28" fill="#2D0A3E"/>
@@ -96,7 +109,29 @@ function AgentDiagnostic() {
     if(!b64&&!ctx.trim()){setErr("Importe un PDF ou ajoute du contexte.");return;}
     setErr("");setLoading(true);setPct(8);let mi=0;setMsg(MSGS[0]);
     const iv=setInterval(()=>{mi=Math.min(mi+1,MSGS.length-1);setMsg(MSGS[mi]);setPct(Math.round((mi/(MSGS.length-1))*85));},2000);
-    try{const uc=[];if(b64)uc.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:b64}});uc.push({type:"text",text:"Génère le rapport L1.1."+(ctx.trim()?"\n\nContexte : "+ctx:"")});const d=await callAPI(DSYS,uc);clearInterval(iv);setPct(100);setRep(d);}
+    try{
+      const uc=[];if(b64)uc.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:b64}});uc.push({type:"text",text:"Génère le rapport L1.1."+(ctx.trim()?"\n\nContexte : "+ctx:"")});
+      const d=await callAPI(DSYS,uc);
+      clearInterval(iv);setPct(100);setRep(d);
+      // SYNC SUPABASE
+      const c=d.clientExtrait||{};
+      const scores={};
+      (d.pilliers||[]).forEach(p=>{ scores[p.nom]=p.score; });
+      await syncToSupabase('diagnostics', {
+        client_nom: [c.entreprise,c.nom].filter(v=>v&&!v.includes("trouvé")).join(" — ") || 'Non renseigné',
+        secteur: c.secteur || '',
+        date_diag: new Date().toISOString().slice(0,10),
+        statut: 'rapport_envoyé',
+        rapport_genere: true,
+        score_cash:        parseFloat(scores['Cash'])        || 0,
+        score_strategie:   parseFloat(scores['Stratégie'])   || 0,
+        score_clients:     parseFloat(scores['Clients'])     || 0,
+        score_equipe:      parseFloat(scores['Équipe'])      || 0,
+        score_risques:     parseFloat(scores['Risques'])     || 0,
+        score_croissance:  parseFloat(scores['Croissance'])  || 0,
+        score_resilience:  parseFloat(scores['Résilience'])  || 0,
+      }, 'diagnostic');
+    }
     catch(e){clearInterval(iv);setErr("Erreur. Réessaie.");}finally{setLoading(false);}
   };
   const reset=()=>{setRep(null);setPdf(null);setB64(null);setCtx("");setErr("");setPct(0);};
@@ -202,6 +237,16 @@ function AgentEditorial() {
       setArt(a);
       const d=await callAPI(DSYS_ED,`Titre:${a.titre}\nAccroche:${a.accroche}\nPilier:${p?.label}`);
       clearInterval(iv);setDecl(d);
+      // SYNC SUPABASE
+      await syncToSupabase('contenus', {
+        titre: a.titre || form.sujet,
+        type_contenu: 'article',
+        canal: 'linkedin',
+        pilier: p?.label || '',
+        date_pub: new Date().toISOString().slice(0,10),
+        texte_genere: true,
+        source_agent: 'editorial',
+      }, 'diagnostic');
     }catch(e){clearInterval(iv);setErr("Erreur. Réessaie.");}finally{setLoading(false);}
   };
   const reset=()=>{setArt(null);setDecl(null);setErr("");};
