@@ -75,7 +75,7 @@ const Logo = ({ height=34 }) => (
 );
 
 const callAPI = async (system, content) => {
-  const res = await fetch("/api/analyze", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system,messages:[{role:"user",content}]})});
+  const res = await fetch("/api/analyze", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system,messages:[{role:"user",content}]})});
   const data = await res.json();
   return JSON.parse((data.content?.[0]?.text||"").replace(/```json|```/g,"").trim());
 };
